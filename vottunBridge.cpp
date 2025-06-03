@@ -526,7 +526,7 @@ void transferToContract(const char* nodeIp, int nodePort, const char* seed, uint
 
     packet.input.amount = amount;
 
-    packet.transaction.amount = 0;
+    packet.transaction.amount = amount;
     memcpy(packet.transaction.sourcePublicKey, sourcePublicKey, 32);
     memcpy(packet.transaction.destinationPublicKey, destPublicKey, 32);
     uint32_t currentTick = getTickNumberFromNode(qc);
@@ -589,7 +589,7 @@ void getOrder(const char* nodeIp, int nodePort, uint64_t orderId)
     getIdentityFromPublicKey(result.order.originAccount, originAccount, false);
     getIdentityFromPublicKey(result.order.destinationAccount, destinationAccount, false);
 
-    printf("The status of Order%u\n\n", result.status);
+    printf("The status of Order%llu is %u\n\n", orderId ,result.status);
     printf("%s\nOrderId: %llu\nOriginAccount: %s\nDestinationAccount: %s\nAmount: %lld\nMetadata: %s\nSource Chain: %u", result.message,result.order.orderId, originAccount, destinationAccount, result.order.amount, result.order.memo, result.order.sourceChain);
 }
 
@@ -729,4 +729,13 @@ void getOrderByDetails(const char* nodeIp, int nodePort, const char* ethAddress,
         return;
     }
 
+    if (result.status)
+    {
+        printf("There is no the order%llu", result.orderId);
+    }
+    else 
+    {
+        printf("The order%llu exists", result.orderId);
+    }
+    
 }

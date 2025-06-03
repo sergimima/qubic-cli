@@ -249,7 +249,7 @@ Command:
 			Get MsVault owners given vault ID.
 
 [VOTTUNBRIDGE COMMANDS]
-	-vottuncreateorder <ETHER_ADDRESS> <ORDER_ID> <FROM_QUBIC_TO_ETHEREUM>
+	-vottuncreateorder <ETHER_ADDRESS> <AMOUNT> <FROM_QUBIC_TO_ETHEREUM>
 			Create the order with order infos
 	-vottunsetadmin <ADDRESS>
 			Set the admin with <ADDRESS>
