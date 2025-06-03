@@ -44,6 +44,7 @@ struct createOrder_input
 struct createOrder_output
 {
     uint8_t status;
+    uint64_t orderId;
 };
 
 struct setAdmin_input
@@ -159,15 +160,35 @@ void createOrder(const char* nodeIp, int nodePort, const char* seed, uint32_t sc
     packet.header.zeroDejavu();
     packet.header.setType(BROADCAST_TRANSACTION);
     qc->sendData((uint8_t *) &packet, packet.header.size());
+    
+    // Calcular el hash de la transacción
     KangarooTwelve((unsigned char*)&packet.transaction,
                    sizeof(packet.transaction) + sizeof(createOrder_input) + SIGNATURE_SIZE,
                    digest,
-                   32); // recompute digest for txhash
+                   32); // recalcular digest para txhash
     getTxHashFromDigest(digest, txHash);
+    
+    // Mostrar información de la transacción
     LOG("createOrder tx has been sent!\n");
     printReceipt(packet.transaction, txHash, nullptr);
     LOG("run ./qubic-cli [...] -checktxontick %u %s\n", currentTick + scheduledTickOffset, txHash);
     LOG("to check your tx confirmation status\n");
+    
+    // Recibir y mostrar la respuesta del contrato
+    struct {
+        RequestResponseHeader header;
+        createOrder_output output;
+    } response;
+
+    if (qc->receiveData((uint8_t*)&response, sizeof(response))) {
+        if (response.output.status == 0) { // Éxito
+            LOG("Order created successfully! Order ID: %llu\n", response.output.orderId);
+        } else {
+            LOG("Error creating order. Status: %u\n", response.output.status);
+        }
+    } else {
+        LOG("Failed to receive response from contract\n");
+    }
 }
 
 void setAdmin(const char* nodeIp, int nodePort, const char* seed, uint32_t scheduledTickOffset, const char* identity)
