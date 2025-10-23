@@ -711,6 +711,26 @@ int run(int argc, char* argv[])
             getAvailableFees(g_nodeIp, g_nodePort);
             break;
         }
+        case VOTTUNBRIDGE_CREATE_PROPOSAL:
+        {
+            sanityCheckNode(g_nodeIp, g_nodePort);
+            sanityCheckSeed(g_seed);
+            createProposal(g_nodeIp, g_nodePort, g_seed, g_offsetScheduledTick, g_vottun_proposalType, g_vottun_targetAddress, g_vottun_amount);
+            break;
+        }
+        case VOTTUNBRIDGE_APPROVE_PROPOSAL:
+        {
+            sanityCheckNode(g_nodeIp, g_nodePort);
+            sanityCheckSeed(g_seed);
+            approveProposal(g_nodeIp, g_nodePort, g_seed, g_offsetScheduledTick, g_vottun_proposalId);
+            break;
+        }
+        case VOTTUNBRIDGE_GET_PROPOSAL:
+        {
+            sanityCheckNode(g_nodeIp, g_nodePort);
+            getProposal(g_nodeIp, g_nodePort, g_vottun_proposalId);
+            break;
+        }
         case TEST_QPI_FUNCTIONS_OUTPUT:
         {
             sanityCheckNode(g_nodeIp, g_nodePort);
