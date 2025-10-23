@@ -10,19 +10,23 @@
 #include "logger.h"
 #include "nodeUtils.h"
 #include "K12AndKeyUtil.h"
-#include "vottunBridge.h"
+#include "VottunBridge.h"
+#include "vottunBridgeCLI.h"
 
-#define VOTTUNBRIDGE_CONTRACT_INDEX 13
+#define VOTTUNBRIDGE_CONTRACT_INDEX 18
 
 // VOTTUNBRIDGE FUNCTIONS
 
 #define VOTTUNBRIDGE_TYPE_GET_ORDER 1
+#define VOTTUNBRIDGE_TYPE_IS_ADMIN 2
+#define VOTTUNBRIDGE_TYPE_IS_MANAGER 3
 #define VOTTUNBRIDGE_TYPE_GET_TOTAL_RECEIVED_TOKEN 4
 #define VOTTUNBRIDGE_TYPE_GET_ADMIN_ID 5
 #define VOTTUNBRIDGE_TYPE_GET_TOTAL_LOCKED_TOKEN 6
 #define VOTTUNBRIDGE_TYPE_GET_ORDER_BY_DETAILS 7
 #define VOTTUNBRIDGE_TYPE_GET_CONTRACT_INFO 8
 #define VOTTUNBRIDGE_TYPE_GET_AVAILABLE_FEES 9
+#define VOTTUNBRIDGE_TYPE_GET_PROPOSAL 10
 
 // VOTTUNBRIDGE PROCEDURES
 
@@ -33,16 +37,18 @@
 #define VOTTUNBRIDGE_TYPE_COMPLETE_ORDER 5
 #define VOTTUNBRIDGE_TYPE_REFUND_ORDER 6
 #define VOTTUNBRIDGE_TYPE_TRANSFER_TO_CONTRACT 7
-#define VOTTUNBRIDGE_TYPE_ADD_LIQUIDITY 8
-#define VOTTUNBRIDGE_TYPE_WITHDRAW_FEES 9
+#define VOTTUNBRIDGE_TYPE_WITHDRAW_FEES 8
+#define VOTTUNBRIDGE_TYPE_ADD_LIQUIDITY 9
+#define VOTTUNBRIDGE_TYPE_CREATE_PROPOSAL 10
+#define VOTTUNBRIDGE_TYPE_APPROVE_PROPOSAL 11
 
 constexpr uint64_t TRANSACTION_FEE = 1000;
 
 struct createOrder_input
 {
     uint8_t qubicDestination[32];
-    uint8_t ethAddress[64];
     uint64_t amount;
+    uint8_t ethAddress[64];
     bool fromQubicToEthereum;
 };
 
@@ -134,6 +140,54 @@ struct addLiquidity_output
     uint64_t totalLocked;
 };
 
+// Multisig proposal structures
+struct AdminProposal
+{
+    uint64_t proposalId;
+    uint8_t proposalType;
+    uint8_t targetAddress[32];
+    uint64_t amount;
+    uint8_t approvals[16][32];  // Array of 16 admin public keys
+    uint8_t approvalsCount;
+    bool executed;
+    bool active;
+};
+
+struct createProposal_input
+{
+    uint8_t proposalType;
+    uint8_t targetAddress[32];
+    uint64_t amount;
+};
+
+struct createProposal_output
+{
+    uint8_t status;
+    uint64_t proposalId;
+};
+
+struct approveProposal_input
+{
+    uint64_t proposalId;
+};
+
+struct approveProposal_output
+{
+    uint8_t status;
+    bool executed;
+};
+
+struct getProposal_input
+{
+    uint64_t proposalId;
+};
+
+struct getProposal_output
+{
+    uint8_t status;
+    AdminProposal proposal;
+};
+
 void createOrder(const char* nodeIp, int nodePort, const char* seed, uint32_t scheduledTickOffset, const char* qubicDestination, const char* ethAddress, uint64_t amount, bool fromQubicToEthereum)
 {
     auto qc = make_qc(nodeIp, nodePort);
@@ -169,11 +223,17 @@ void createOrder(const char* nodeIp, int nodePort, const char* seed, uint32_t sc
     #pragma pack(pop)
 
     memcpy(packet.input.qubicDestination, publicKey, 32);
-    memcpy(packet.input.ethAddress, ethAddress, 64);
     packet.input.amount = amount;
+    memcpy(packet.input.ethAddress, ethAddress, 64);
     packet.input.fromQubicToEthereum = fromQubicToEthereum;
 
-    packet.transaction.amount = amount / 100;
+    // Calculate fee: 0.5% (5000000 billionths)
+    uint64_t tradeFeeBillionths = 5000000;
+    uint64_t requiredFeeEth = (amount * tradeFeeBillionths) / 1000000000;
+    uint64_t requiredFeeQubic = (amount * tradeFeeBillionths) / 1000000000;
+    uint64_t totalRequiredFee = requiredFeeEth + requiredFeeQubic;
+
+    packet.transaction.amount = amount + totalRequiredFee;
     memcpy(packet.transaction.sourcePublicKey, sourcePublicKey, 32);
     memcpy(packet.transaction.destinationPublicKey, destPublicKey, 32);
     uint32_t currentTick = getTickNumberFromNode(qc);
@@ -968,8 +1028,26 @@ void getContractInfo(const char* nodeIp, int nodePort)
         printf("Tokens Locked: %u\n\n", result.firstOrders[i].tokensLocked);
     }
 
-    printf("Total Orders Found: %llu\n", result.totalOrdersFound); 
+    printf("Total Orders Found: %llu\n", result.totalOrdersFound);
     printf("Empty Slots: %llu\n", result.emptySlots);
+
+    // Print multisig information
+    printf("\n=== Multisig Configuration ===\n");
+    printf("Number of Admins: %u\n", result.numberOfAdmins);
+    printf("Required Approvals: %u\n", result.requiredApprovals);
+    printf("Total Active Proposals: %llu\n", result.totalProposals);
+
+    printf("\nMultisig Admins:\n");
+    for (int i = 0; i < 16; i++)
+    {
+        char multisigAdmin[128] = {0};
+        getIdentityFromPublicKey(result.multisigAdmins[i], multisigAdmin, false);
+        // Only print non-empty admins
+        if (multisigAdmin[0] != '\0' && strcmp(multisigAdmin, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA") != 0)
+        {
+            printf("  Admin %d: %s\n", i + 1, multisigAdmin);
+        }
+    }
 }
 
 void getAvailableFees(const char* nodeIp, int nodePort)
@@ -1001,5 +1079,207 @@ void getAvailableFees(const char* nodeIp, int nodePort)
     {
         LOG("Failed to receive data\n");
         return;
+    }
+
+    printf("Available Fees: %llu\n", result.availableFees);
+    printf("Total Earned Fees: %llu\n", result.totalEarnedFees);
+    printf("Total Distributed Fees: %llu\n", result.totalDistributedFees);
+}
+
+// Multisig Functions
+
+void createProposal(const char* nodeIp, int nodePort, const char* seed, uint32_t scheduledTickOffset,
+                    uint8_t proposalType, const char* targetAddress, uint64_t amount)
+{
+    auto qc = make_qc(nodeIp, nodePort);
+
+    uint8_t targetPublicKey[32] = {0};
+    if (targetAddress && strlen(targetAddress) > 0) {
+        getPublicKeyFromIdentity(targetAddress, targetPublicKey);
+    }
+
+    uint8_t privateKey[32] = {0};
+    uint8_t sourcePublicKey[32] = {0};
+    uint8_t destPublicKey[32] = {0};
+    uint8_t subseed[32] = {0};
+    uint8_t digest[32] = {0};
+    uint8_t signature[64] = {0};
+    char publicIdentity[128] = {0};
+    char txHash[128] = {0};
+    getSubseedFromSeed((uint8_t*)seed, subseed);
+    getPrivateKeyFromSubSeed(subseed, privateKey);
+    getPublicKeyFromPrivateKey(privateKey, sourcePublicKey);
+    const bool isLowerCase = false;
+    getIdentityFromPublicKey(sourcePublicKey, publicIdentity, isLowerCase);
+    ((uint64_t*)destPublicKey)[0] = VOTTUNBRIDGE_CONTRACT_INDEX;
+    ((uint64_t*)destPublicKey)[1] = 0;
+    ((uint64_t*)destPublicKey)[2] = 0;
+    ((uint64_t*)destPublicKey)[3] = 0;
+
+    #pragma pack(push, 1)
+    struct {
+        RequestResponseHeader header;
+        Transaction transaction;
+        createProposal_input input;
+        unsigned char signature[64];
+    } packet;
+    #pragma pack(pop)
+
+    packet.input.proposalType = proposalType;
+    memcpy(packet.input.targetAddress, targetPublicKey, 32);
+    packet.input.amount = amount;
+
+    packet.transaction.amount = 0;
+    memcpy(packet.transaction.sourcePublicKey, sourcePublicKey, 32);
+    memcpy(packet.transaction.destinationPublicKey, destPublicKey, 32);
+    uint32_t currentTick = getTickNumberFromNode(qc);
+    packet.transaction.tick = currentTick + scheduledTickOffset;
+    packet.transaction.inputType = VOTTUNBRIDGE_TYPE_CREATE_PROPOSAL;
+    packet.transaction.inputSize = sizeof(createProposal_input);
+    KangarooTwelve((unsigned char*)&packet.transaction,
+                   sizeof(packet.transaction) + sizeof(createProposal_input),
+                   digest,
+                   32);
+    sign(subseed, sourcePublicKey, digest, signature);
+    memcpy(packet.signature, signature, 64);
+    packet.header.setSize(sizeof(packet));
+    packet.header.zeroDejavu();
+    packet.header.setType(BROADCAST_TRANSACTION);
+    qc->sendData((uint8_t *) &packet, packet.header.size());
+    KangarooTwelve((unsigned char*)&packet.transaction,
+                   sizeof(packet.transaction) + sizeof(createProposal_input) + SIGNATURE_SIZE,
+                   digest,
+                   32); // recompute digest for txhash
+    getTxHashFromDigest(digest, txHash);
+    LOG("createProposal tx has been sent!\n");
+    LOG("Proposal Type: %u\n", proposalType);
+    if (targetAddress && strlen(targetAddress) > 0) {
+        LOG("Target Address: %s\n", targetAddress);
+    }
+    if (amount > 0) {
+        LOG("Amount: %llu\n", amount);
+    }
+    printReceipt(packet.transaction, txHash, nullptr);
+    LOG("run ./qubic-cli [...] -checktxontick %u %s\n", currentTick + scheduledTickOffset, txHash);
+    LOG("to check your tx confirmation status\n");
+}
+
+void approveProposal(const char* nodeIp, int nodePort, const char* seed, uint32_t scheduledTickOffset, uint64_t proposalId)
+{
+    auto qc = make_qc(nodeIp, nodePort);
+
+    uint8_t privateKey[32] = {0};
+    uint8_t sourcePublicKey[32] = {0};
+    uint8_t destPublicKey[32] = {0};
+    uint8_t subseed[32] = {0};
+    uint8_t digest[32] = {0};
+    uint8_t signature[64] = {0};
+    char publicIdentity[128] = {0};
+    char txHash[128] = {0};
+    getSubseedFromSeed((uint8_t*)seed, subseed);
+    getPrivateKeyFromSubSeed(subseed, privateKey);
+    getPublicKeyFromPrivateKey(privateKey, sourcePublicKey);
+    const bool isLowerCase = false;
+    getIdentityFromPublicKey(sourcePublicKey, publicIdentity, isLowerCase);
+    ((uint64_t*)destPublicKey)[0] = VOTTUNBRIDGE_CONTRACT_INDEX;
+    ((uint64_t*)destPublicKey)[1] = 0;
+    ((uint64_t*)destPublicKey)[2] = 0;
+    ((uint64_t*)destPublicKey)[3] = 0;
+
+    #pragma pack(push, 1)
+    struct {
+        RequestResponseHeader header;
+        Transaction transaction;
+        approveProposal_input input;
+        unsigned char signature[64];
+    } packet;
+    #pragma pack(pop)
+
+    packet.input.proposalId = proposalId;
+
+    packet.transaction.amount = 0;
+    memcpy(packet.transaction.sourcePublicKey, sourcePublicKey, 32);
+    memcpy(packet.transaction.destinationPublicKey, destPublicKey, 32);
+    uint32_t currentTick = getTickNumberFromNode(qc);
+    packet.transaction.tick = currentTick + scheduledTickOffset;
+    packet.transaction.inputType = VOTTUNBRIDGE_TYPE_APPROVE_PROPOSAL;
+    packet.transaction.inputSize = sizeof(approveProposal_input);
+    KangarooTwelve((unsigned char*)&packet.transaction,
+                   sizeof(packet.transaction) + sizeof(approveProposal_input),
+                   digest,
+                   32);
+    sign(subseed, sourcePublicKey, digest, signature);
+    memcpy(packet.signature, signature, 64);
+    packet.header.setSize(sizeof(packet));
+    packet.header.zeroDejavu();
+    packet.header.setType(BROADCAST_TRANSACTION);
+    qc->sendData((uint8_t *) &packet, packet.header.size());
+    KangarooTwelve((unsigned char*)&packet.transaction,
+                   sizeof(packet.transaction) + sizeof(approveProposal_input) + SIGNATURE_SIZE,
+                   digest,
+                   32); // recompute digest for txhash
+    getTxHashFromDigest(digest, txHash);
+    LOG("approveProposal tx has been sent!\n");
+    printReceipt(packet.transaction, txHash, nullptr);
+    LOG("run ./qubic-cli [...] -checktxontick %u %s\n", currentTick + scheduledTickOffset, txHash);
+    LOG("to check your tx confirmation status\n");
+}
+
+void getProposal(const char* nodeIp, int nodePort, uint64_t proposalId)
+{
+    auto qc = make_qc(nodeIp, nodePort);
+
+    #pragma pack(push, 1)
+    struct {
+        RequestResponseHeader header;
+        RequestContractFunction rcf;
+        getProposal_input input;
+    } packet;
+    #pragma pack(pop)
+
+    packet.header.setSize(sizeof(packet));
+    packet.header.randomizeDejavu();
+    packet.header.setType(RequestContractFunction::type());
+    packet.rcf.inputSize = sizeof(getProposal_input);
+    packet.rcf.inputType = VOTTUNBRIDGE_TYPE_GET_PROPOSAL;
+    packet.rcf.contractIndex = VOTTUNBRIDGE_CONTRACT_INDEX;
+    packet.input.proposalId = proposalId;
+
+    qc->sendData((uint8_t *) &packet, packet.header.size());
+
+    getProposal_output result;
+    try
+    {
+        result = qc->receivePacketWithHeaderAs<getProposal_output>();
+    }
+    catch (std::logic_error)
+    {
+        LOG("Failed to receive data\n");
+        return;
+    }
+
+    if (result.status != 0)
+    {
+        printf("Proposal not found or error status: %u\n", result.status);
+        return;
+    }
+
+    printf("\n=== Proposal %llu ===\n", result.proposal.proposalId);
+    printf("Type: %u\n", result.proposal.proposalType);
+    printf("Amount: %llu\n", result.proposal.amount);
+    printf("Approvals Count: %u\n", result.proposal.approvalsCount);
+    printf("Executed: %s\n", result.proposal.executed ? "Yes" : "No");
+    printf("Active: %s\n", result.proposal.active ? "Yes" : "No");
+
+    char targetAddr[128] = {0};
+    getIdentityFromPublicKey(result.proposal.targetAddress, targetAddr, false);
+    printf("Target Address: %s\n", targetAddr);
+
+    printf("\nApprovers:\n");
+    for (int i = 0; i < result.proposal.approvalsCount && i < 16; i++)
+    {
+        char approver[128] = {0};
+        getIdentityFromPublicKey(result.proposal.approvals[i], approver, false);
+        printf("  %d. %s\n", i + 1, approver);
     }
 }
