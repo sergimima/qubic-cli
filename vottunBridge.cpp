@@ -11,7 +11,6 @@
 #include "nodeUtils.h"
 #include "K12AndKeyUtil.h"
 #include "vottunBridge.h"
-#include "vottunBridgeCLI.h"
 
 #define VOTTUNBRIDGE_CONTRACT_INDEX 18
 

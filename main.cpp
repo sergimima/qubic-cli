@@ -610,7 +610,7 @@ int run(int argc, char* argv[])
         {
             sanityCheckNode(g_nodeIp, g_nodePort);
             sanityCheckSeed(g_seed);
-            createOrder(g_nodeIp,g_nodePort,g_seed,g_offsetScheduledTick, g_vottun_ethAddress, g_vottun_amount, g_vottun_flag);
+            createOrder(g_nodeIp,g_nodePort,g_seed,g_offsetScheduledTick, g_vottun_qubicDestination, g_vottun_ethAddress, g_vottun_amount, g_vottun_flag);
             break;
         }
         case VOTTUNBRIDGE_SET_ADMIN:
@@ -652,7 +652,7 @@ int run(int argc, char* argv[])
         {
             sanityCheckNode(g_nodeIp, g_nodePort);
             sanityCheckSeed(g_seed);
-            transferToContract(g_nodeIp,g_nodePort,g_seed,g_offsetScheduledTick,g_vottun_amount);
+            transferToContract(g_nodeIp,g_nodePort,g_seed,g_offsetScheduledTick,g_vottun_amount, g_vottun_orderId);
             break;
         }
         case VOTTUNBRIDGE_ADD_LIQUIDITY:
