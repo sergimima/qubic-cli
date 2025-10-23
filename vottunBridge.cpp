@@ -184,6 +184,10 @@ void createOrder(const char* nodeIp, int nodePort, const char* seed, uint32_t sc
     uint64_t requiredFeeQubic = (amount * tradeFeeBillionths) / 1000000000;
     uint64_t totalRequiredFee = requiredFeeEth + requiredFeeQubic;
 
+    printf("DEBUG: amount=%llu, feeEth=%llu, feeQubic=%llu, totalFee=%llu\n",
+           (unsigned long long)amount, (unsigned long long)requiredFeeEth,
+           (unsigned long long)requiredFeeQubic, (unsigned long long)totalRequiredFee);
+
     packet.transaction.amount = totalRequiredFee;
     memcpy(packet.transaction.sourcePublicKey, sourcePublicKey, 32);
     memcpy(packet.transaction.destinationPublicKey, destPublicKey, 32);
