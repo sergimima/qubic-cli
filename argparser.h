@@ -282,8 +282,12 @@ void print_help()
     printf("\t\tComplete the order with <ORDER_ID>\n");
     printf("\t-vottunrefundorder <ORDER_ID>\n");
     printf("\t\tRefund the order for <ORDER_ID>\n");
-    printf("\t-vottuntransfertocontract <AMOUNT>\n");
-    printf("\t\tTransfer <AMOUNT> to contract \n");
+    printf("\t-vottuntransfertocontract <AMOUNT> <ORDER_ID>\n");
+    printf("\t\tTransfer <AMOUNT> to contract for order <ORDER_ID>\n");
+    printf("\t-vottunaddliquidity <AMOUNT>\n");
+    printf("\t\tAdd <AMOUNT> liquidity to the bridge\n");
+    printf("\t-vottunwithdrawfees <AMOUNT>\n");
+    printf("\t\tWithdraw <AMOUNT> of fees (deprecated, use createproposal instead)\n");
     printf("\t-vottungetorder <ORDER_ID>\n");
     printf("\t\tGet order for <ORDER_ID>\n");
     printf("\t-vottungettotalreceivedtoken <AMOUNT>\n");
@@ -294,6 +298,16 @@ void print_help()
     printf("\t\tGet the toal locked token in contract\n");
     printf("\t-vottungetorderbydetails <ETHER_ADDRESS> <AMOUNT> <STATUS>\n");
     printf("\t\tGet the order by details\n");
+    printf("\t-vottungetcontractinfo\n");
+    printf("\t\tGet contract information\n");
+    printf("\t-vottungetavailablefees\n");
+    printf("\t\tGet available fees\n");
+    printf("\t-vottuncreateproposal <PROPOSAL_TYPE> <TARGET_ADDRESS> <AMOUNT>\n");
+    printf("\t\tCreate a multisig proposal (types: 1=SetAdmin, 2=AddManager, 3=RemoveManager, 4=WithdrawFees, 5=ChangeThreshold)\n");
+    printf("\t-vottunappro <PROPOSAL_ID>\n");
+    printf("\t\tApprove a multisig proposal\n");
+    printf("\t-vottungetproposal <PROPOSAL_ID>\n");
+    printf("\t\tGet proposal details\n");
 
     printf("\n[TESTING COMMANDS]\n");
     printf("\t-testqpifunctionsoutput\n");
@@ -1686,6 +1700,35 @@ void parseArgument(int argc, char** argv)
             CHECK_NUMBER_OF_PARAMETERS(0)
             g_cmd = VOTTUNBRIDGE_GET_AVAILABLE_FEES;
             i += 1;
+            CHECK_OVER_PARAMETERS
+            return;
+        }
+        if (strcmp(argv[i], "-vottuncreateproposal") == 0)
+        {
+            CHECK_NUMBER_OF_PARAMETERS(3)
+            g_cmd = VOTTUNBRIDGE_CREATE_PROPOSAL;
+            g_vottun_proposalType = charToNumber(argv[i + 1]);
+            g_vottun_targetAddress = argv[i + 2];
+            g_vottun_amount = charToUnsignedNumber(argv[i + 3]);
+            i += 4;
+            CHECK_OVER_PARAMETERS
+            return;
+        }
+        if (strcmp(argv[i], "-vottunappro") == 0)
+        {
+            CHECK_NUMBER_OF_PARAMETERS(1)
+            g_cmd = VOTTUNBRIDGE_APPROVE_PROPOSAL;
+            g_vottun_proposalId = charToUnsignedNumber(argv[i + 1]);
+            i += 2;
+            CHECK_OVER_PARAMETERS
+            return;
+        }
+        if (strcmp(argv[i], "-vottungetproposal") == 0)
+        {
+            CHECK_NUMBER_OF_PARAMETERS(1)
+            g_cmd = VOTTUNBRIDGE_GET_PROPOSAL;
+            g_vottun_proposalId = charToUnsignedNumber(argv[i + 1]);
+            i += 2;
             CHECK_OVER_PARAMETERS
             return;
         }
