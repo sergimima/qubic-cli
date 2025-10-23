@@ -1,5 +1,8 @@
 #pragma once
 
+#include <cstdint>
+#include "structs.h"
+
 // SC structs
 
 struct OrderResponse
@@ -12,9 +15,9 @@ struct OrderResponse
     uint32_t sourceChain;    // Source chain identifier
 };
 
-    struct getOrder_input
+    struct vottunBridgeGetOrder_input
     {
-        uint64 orderId;
+        uint64_t orderId;
     };
 
 struct vottunBridgeGetOrder_output
@@ -87,6 +90,7 @@ struct vottunBridgeGetOrderByDetails_output
 {
     uint8_t status;         // Estado de la operación (0 = éxito, otro = error)
     uint64_t orderId;       // ID de la orden encontrada
+    uint8_t qubicDestination[32]; // Qubic destination public key
 
     static constexpr unsigned char type()
     {
@@ -102,8 +106,42 @@ void completeOrder(const char* nodeIp, int nodePort, const char* seed, uint32_t 
 void refundOrder(const char* nodeIp, int nodePort, const char* seed, uint32_t scheduledTickOffset, uint64_t orderId);
 void transferToContract(const char* nodeIp, int nodePort, const char* seed, uint32_t scheduledTickOffset, uint64_t amount);
 
+struct vottunBridgeGetContractInfo_input
+{
+    uint8_t dummy;
+};
+
+struct vottunBridgeGetContractInfo_output
+{
+    uint8_t admin[32];
+
+    static constexpr unsigned char type()
+    {
+        return RespondContractFunction::type();
+    }
+};
+
+struct vottunBridgeGetAvailableFees_input
+{
+    uint8_t dummy;
+};
+
+struct vottunBridgeGetAvailableFees_output
+{
+    uint64_t availableFees;
+    uint64_t totalEarnedFees;
+    uint64_t totalDistributedFees;
+
+    static constexpr unsigned char type()
+    {
+        return RespondContractFunction::type();
+    }
+};
+
 void getOrder(const char* nodeIp, int nodePort, uint64_t orderId);
 void getTotalReceivedTokens(const char* nodeIp, int nodePort, uint64_t amount);
 void getAdminID(const char* nodeIp, int nodePort, uint8_t idInput);
 void getTotalLockedTokens(const char* nodeIp, int nodePort);
 void getOrderByDetails(const char* nodeIp, int nodePort, const char* ethAddress, uint64_t amount, uint8_t status);
+void getContractInfo(const char* nodeIp, int nodePort);
+void getAvailableFees(const char* nodeIp, int nodePort);
