@@ -1561,8 +1561,8 @@ void parseArgument(int argc, char** argv)
             CHECK_NUMBER_OF_PARAMETERS(4)
             g_cmd = VOTTUNBRIDGE_CREATE_ORDER;
             g_vottun_qubicDestination = argv[i + 1];
-            g_vottun_amount = charToNumber(argv[i + 2]);
-            g_vottun_ethAddress = argv[i + 3];
+            g_vottun_ethAddress = argv[i + 2];
+            g_vottun_amount = charToUnsignedNumber(argv[i + 3]);
             g_vottun_flag = charToNumber(argv[i + 4]);
             i += 5;
             CHECK_OVER_PARAMETERS
