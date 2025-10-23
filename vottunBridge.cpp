@@ -184,7 +184,7 @@ void createOrder(const char* nodeIp, int nodePort, const char* seed, uint32_t sc
     uint64_t requiredFeeQubic = (amount * tradeFeeBillionths) / 1000000000;
     uint64_t totalRequiredFee = requiredFeeEth + requiredFeeQubic;
 
-    packet.transaction.amount = amount + totalRequiredFee;
+    packet.transaction.amount = totalRequiredFee;
     memcpy(packet.transaction.sourcePublicKey, sourcePublicKey, 32);
     memcpy(packet.transaction.destinationPublicKey, destPublicKey, 32);
     uint32_t currentTick = getTickNumberFromNode(qc);
