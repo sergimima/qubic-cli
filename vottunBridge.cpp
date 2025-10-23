@@ -139,54 +139,6 @@ struct addLiquidity_output
     uint64_t totalLocked;
 };
 
-// Multisig proposal structures
-struct AdminProposal
-{
-    uint64_t proposalId;
-    uint8_t proposalType;
-    uint8_t targetAddress[32];
-    uint64_t amount;
-    uint8_t approvals[16][32];  // Array of 16 admin public keys
-    uint8_t approvalsCount;
-    bool executed;
-    bool active;
-};
-
-struct createProposal_input
-{
-    uint8_t proposalType;
-    uint8_t targetAddress[32];
-    uint64_t amount;
-};
-
-struct createProposal_output
-{
-    uint8_t status;
-    uint64_t proposalId;
-};
-
-struct approveProposal_input
-{
-    uint64_t proposalId;
-};
-
-struct approveProposal_output
-{
-    uint8_t status;
-    bool executed;
-};
-
-struct getProposal_input
-{
-    uint64_t proposalId;
-};
-
-struct getProposal_output
-{
-    uint8_t status;
-    AdminProposal proposal;
-};
-
 void createOrder(const char* nodeIp, int nodePort, const char* seed, uint32_t scheduledTickOffset, const char* qubicDestination, const char* ethAddress, uint64_t amount, bool fromQubicToEthereum)
 {
     auto qc = make_qc(nodeIp, nodePort);
