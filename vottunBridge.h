@@ -145,12 +145,12 @@ struct approveProposal_output
     }
 };
 
-struct getProposal_input
+struct vottunBridgeGetProposal_input
 {
     uint64_t proposalId;
 };
 
-struct getProposal_output
+struct vottunBridgeGetProposal_output
 {
     uint8_t status;
     AdminProposal proposal;

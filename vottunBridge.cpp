@@ -1204,24 +1204,24 @@ void getProposal(const char* nodeIp, int nodePort, uint64_t proposalId)
     struct {
         RequestResponseHeader header;
         RequestContractFunction rcf;
-        getProposal_input input;
+        vottunBridgeGetProposal_input input;
     } packet;
     #pragma pack(pop)
 
     packet.header.setSize(sizeof(packet));
     packet.header.randomizeDejavu();
     packet.header.setType(RequestContractFunction::type());
-    packet.rcf.inputSize = sizeof(getProposal_input);
+    packet.rcf.inputSize = sizeof(vottunBridgeGetProposal_input);
     packet.rcf.inputType = VOTTUNBRIDGE_TYPE_GET_PROPOSAL;
     packet.rcf.contractIndex = VOTTUNBRIDGE_CONTRACT_INDEX;
     packet.input.proposalId = proposalId;
 
     qc->sendData((uint8_t *) &packet, packet.header.size());
 
-    getProposal_output result;
+    vottunBridgeGetProposal_output result;
     try
     {
-        result = qc->receivePacketWithHeaderAs<getProposal_output>();
+        result = qc->receivePacketWithHeaderAs<vottunBridgeGetProposal_output>();
     }
     catch (std::logic_error)
     {
