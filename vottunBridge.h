@@ -98,13 +98,79 @@ struct vottunBridgeGetOrderByDetails_output
     }
 };
 
-void createOrder(const char* nodeIp, int nodePort, const char* seed, uint32_t scheduledTickOffset, const char* ethAddress, uint64_t amount, bool fromQubicToEthereum);
+// Multisig proposal structure
+struct AdminProposal
+{
+    uint64_t proposalId;
+    uint8_t proposalType;
+    uint8_t targetAddress[32];
+    uint64_t amount;
+    uint8_t approvals[16][32];
+    uint8_t approvalsCount;
+    uint8_t executed;
+    uint8_t active;
+};
+
+struct createProposal_input
+{
+    uint8_t proposalType;
+    uint8_t targetAddress[32];
+    uint64_t amount;
+};
+
+struct createProposal_output
+{
+    uint8_t status;
+    uint64_t proposalId;
+
+    static constexpr unsigned char type()
+    {
+        return RespondContractFunction::type();
+    }
+};
+
+struct approveProposal_input
+{
+    uint64_t proposalId;
+};
+
+struct approveProposal_output
+{
+    uint8_t status;
+    uint8_t executed;
+
+    static constexpr unsigned char type()
+    {
+        return RespondContractFunction::type();
+    }
+};
+
+struct getProposal_input
+{
+    uint64_t proposalId;
+};
+
+struct getProposal_output
+{
+    uint8_t status;
+    AdminProposal proposal;
+
+    static constexpr unsigned char type()
+    {
+        return RespondContractFunction::type();
+    }
+};
+
+// Procedure declarations
+void createOrder(const char* nodeIp, int nodePort, const char* seed, uint32_t scheduledTickOffset, const char* qubicDestination, const char* ethAddress, uint64_t amount, bool fromQubicToEthereum);
 void setAdmin(const char* nodeIp, int nodePort, const char* seed, uint32_t scheduledTickOffset, const char* identity);
 void addManager(const char* nodeIp, int nodePort, const char* seed, uint32_t scheduledTickOffset, const char* identity);
 void removeManager(const char* nodeIp, int nodePort, const char* seed, uint32_t scheduledTickOffset, const char* identity);
 void completeOrder(const char* nodeIp, int nodePort, const char* seed, uint32_t scheduledTickOffset, uint64_t orderId);
 void refundOrder(const char* nodeIp, int nodePort, const char* seed, uint32_t scheduledTickOffset, uint64_t orderId);
-void transferToContract(const char* nodeIp, int nodePort, const char* seed, uint32_t scheduledTickOffset, uint64_t amount);
+void transferToContract(const char* nodeIp, int nodePort, const char* seed, uint32_t scheduledTickOffset, uint64_t amount, uint64_t orderId);
+void createProposal(const char* nodeIp, int nodePort, const char* seed, uint32_t scheduledTickOffset, uint8_t proposalType, const char* targetAddress, uint64_t amount);
+void approveProposal(const char* nodeIp, int nodePort, const char* seed, uint32_t scheduledTickOffset, uint64_t proposalId);
 
 struct vottunBridgeGetContractInfo_input
 {
@@ -165,6 +231,7 @@ struct vottunBridgeGetAvailableFees_output
     }
 };
 
+// Query function declarations
 void getOrder(const char* nodeIp, int nodePort, uint64_t orderId);
 void getTotalReceivedTokens(const char* nodeIp, int nodePort, uint64_t amount);
 void getAdminID(const char* nodeIp, int nodePort, uint8_t idInput);
@@ -172,5 +239,6 @@ void getTotalLockedTokens(const char* nodeIp, int nodePort);
 void getOrderByDetails(const char* nodeIp, int nodePort, const char* ethAddress, uint64_t amount, uint8_t status);
 void getContractInfo(const char* nodeIp, int nodePort);
 void getAvailableFees(const char* nodeIp, int nodePort);
+void getProposal(const char* nodeIp, int nodePort, uint64_t proposalId);
 void addLiquidity(const char* nodeIp, int nodePort, const char* seed, uint32_t scheduledTickOffset, uint64_t amount);
 void withdrawFees(const char* nodeIp, int nodePort, const char* seed, uint32_t scheduledTickOffset, uint64_t amount);
