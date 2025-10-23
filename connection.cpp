@@ -349,6 +349,7 @@ template vottunBridgeGetTotalLockedTokens_output QubicConnection::receivePacketW
 template vottunBridgeGetOrderByDetails_output QubicConnection::receivePacketWithHeaderAs<vottunBridgeGetOrderByDetails_output>();
 template vottunBridgeGetContractInfo_output QubicConnection::receivePacketWithHeaderAs<vottunBridgeGetContractInfo_output>();
 template vottunBridgeGetAvailableFees_output QubicConnection::receivePacketWithHeaderAs<vottunBridgeGetAvailableFees_output>();
+template vottunBridgeGetProposal_output QubicConnection::receivePacketWithHeaderAs<vottunBridgeGetProposal_output>();
 
 // TESTING
 template QpiFunctionsOutput QubicConnection::receivePacketWithHeaderAs<QpiFunctionsOutput>();
