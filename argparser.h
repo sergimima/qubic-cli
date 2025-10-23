@@ -270,8 +270,8 @@ void print_help()
     printf("\t\tGet MsVault owners given vault ID.\n");
 
     printf("\n[VOTTUNBRIDGE COMMANDS]\n");
-    printf("\t-vottuncreateorder <ETHER_ADDRESS> <ORDER_ID> <FROM_QUBIC_TO_ETHEREUM>\n");
-    printf("\t\tCreate the order with order infos\n");
+    printf("\t-vottuncreateorder <QUBIC_DESTINATION> <AMOUNT> <ETHER_ADDRESS> <FROM_QUBIC_TO_ETHEREUM>\n");
+    printf("\t\tCreate an order (FROM_QUBIC_TO_ETHEREUM: 1=Qubic→ETH, 0=ETH→Qubic)\n");
     printf("\t-vottunsetadmin <ADDRESS>\n");
     printf("\t\tSet the admin with <ADDRESS>\n");
     printf("\t-vottunaddmanager <ADDRESS>\n");
@@ -1561,8 +1561,8 @@ void parseArgument(int argc, char** argv)
             CHECK_NUMBER_OF_PARAMETERS(4)
             g_cmd = VOTTUNBRIDGE_CREATE_ORDER;
             g_vottun_qubicDestination = argv[i + 1];
-            g_vottun_ethAddress = argv[i + 2];
-            g_vottun_amount = charToUnsignedNumber(argv[i + 3]);
+            g_vottun_amount = charToUnsignedNumber(argv[i + 2]);
+            g_vottun_ethAddress = argv[i + 3];
             g_vottun_flag = charToNumber(argv[i + 4]);
             i += 5;
             CHECK_OVER_PARAMETERS
