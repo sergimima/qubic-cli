@@ -111,9 +111,36 @@ struct vottunBridgeGetContractInfo_input
     uint8_t dummy;
 };
 
+struct OrderInfo
+{
+    uint8_t qubicSender[32];
+    uint8_t qubicDestination[32];
+    uint64_t orderId;
+    uint64_t amount;
+    uint8_t orderType;
+    uint8_t status;
+    uint8_t fromQubicToEthereum;
+    uint8_t tokensReceived;
+    uint8_t tokensLocked;
+};
+
 struct vottunBridgeGetContractInfo_output
 {
     uint8_t admin[32];
+    uint8_t managers[16][32];
+    uint64_t nextOrderId;
+    uint64_t lockedTokens;
+    uint64_t totalReceivedTokens;
+    uint64_t earnedFees;
+    uint32_t tradeFeeBillionths;
+    uint32_t sourceChain;
+    OrderInfo firstOrders[16];
+    uint64_t totalOrdersFound;
+    uint64_t emptySlots;
+    uint8_t numberOfAdmins;
+    uint8_t requiredApprovals;
+    uint64_t totalProposals;
+    uint8_t multisigAdmins[16][32];
 
     static constexpr unsigned char type()
     {
@@ -145,3 +172,5 @@ void getTotalLockedTokens(const char* nodeIp, int nodePort);
 void getOrderByDetails(const char* nodeIp, int nodePort, const char* ethAddress, uint64_t amount, uint8_t status);
 void getContractInfo(const char* nodeIp, int nodePort);
 void getAvailableFees(const char* nodeIp, int nodePort);
+void addLiquidity(const char* nodeIp, int nodePort, const char* seed, uint32_t scheduledTickOffset, uint64_t amount);
+void withdrawFees(const char* nodeIp, int nodePort, const char* seed, uint32_t scheduledTickOffset, uint64_t amount);
