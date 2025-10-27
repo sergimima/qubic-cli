@@ -104,6 +104,7 @@ struct AdminProposal
     uint64_t proposalId;
     uint8_t proposalType;
     uint8_t targetAddress[32];
+    uint8_t oldAddress[32];
     uint64_t amount;
     uint8_t approvals[16][32];
     uint8_t approvalsCount;
@@ -115,6 +116,7 @@ struct createProposal_input
 {
     uint8_t proposalType;
     uint8_t targetAddress[32];
+    uint8_t oldAddress[32];
     uint64_t amount;
 };
 
@@ -169,7 +171,7 @@ void removeManager(const char* nodeIp, int nodePort, const char* seed, uint32_t 
 void completeOrder(const char* nodeIp, int nodePort, const char* seed, uint32_t scheduledTickOffset, uint64_t orderId);
 void refundOrder(const char* nodeIp, int nodePort, const char* seed, uint32_t scheduledTickOffset, uint64_t orderId);
 void transferToContract(const char* nodeIp, int nodePort, const char* seed, uint32_t scheduledTickOffset, uint64_t amount, uint64_t orderId);
-void createProposal(const char* nodeIp, int nodePort, const char* seed, uint32_t scheduledTickOffset, uint8_t proposalType, const char* targetAddress, uint64_t amount);
+void createProposal(const char* nodeIp, int nodePort, const char* seed, uint32_t scheduledTickOffset, uint8_t proposalType, const char* targetAddress, const char* oldAddress, uint64_t amount);
 void approveProposal(const char* nodeIp, int nodePort, const char* seed, uint32_t scheduledTickOffset, uint64_t proposalId);
 
 struct vottunBridgeGetContractInfo_input

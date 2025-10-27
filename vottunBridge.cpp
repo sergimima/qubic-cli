@@ -1064,13 +1064,18 @@ void getAvailableFees(const char* nodeIp, int nodePort)
 // Multisig Functions
 
 void createProposal(const char* nodeIp, int nodePort, const char* seed, uint32_t scheduledTickOffset,
-                    uint8_t proposalType, const char* targetAddress, uint64_t amount)
+                    uint8_t proposalType, const char* targetAddress, const char* oldAddress, uint64_t amount)
 {
     auto qc = make_qc(nodeIp, nodePort);
 
     uint8_t targetPublicKey[32] = {0};
     if (targetAddress && strlen(targetAddress) > 0) {
         getPublicKeyFromIdentity(targetAddress, targetPublicKey);
+    }
+
+    uint8_t oldPublicKey[32] = {0};
+    if (oldAddress && strlen(oldAddress) > 0) {
+        getPublicKeyFromIdentity(oldAddress, oldPublicKey);
     }
 
     uint8_t privateKey[32] = {0};
@@ -1102,6 +1107,7 @@ void createProposal(const char* nodeIp, int nodePort, const char* seed, uint32_t
 
     packet.input.proposalType = proposalType;
     memcpy(packet.input.targetAddress, targetPublicKey, 32);
+    memcpy(packet.input.oldAddress, oldPublicKey, 32);
     packet.input.amount = amount;
 
     packet.transaction.amount = 0;
@@ -1130,6 +1136,9 @@ void createProposal(const char* nodeIp, int nodePort, const char* seed, uint32_t
     LOG("Proposal Type: %u\n", proposalType);
     if (targetAddress && strlen(targetAddress) > 0) {
         LOG("Target Address: %s\n", targetAddress);
+    }
+    if (oldAddress && strlen(oldAddress) > 0) {
+        LOG("Old Address: %s\n", oldAddress);
     }
     if (amount > 0) {
         LOG("Amount: %llu\n", amount);
