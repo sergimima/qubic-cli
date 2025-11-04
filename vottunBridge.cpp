@@ -966,12 +966,12 @@ void getContractInfo(const char* nodeIp, int nodePort)
         return;
     }
 
-    // Debug: Print first 64 bytes
-    printf("\nDEBUG: First 64 bytes received:\n");
+    // Debug: Print first 544 bytes (up to sourceChain)
+    printf("\nDEBUG: First 544 bytes received:\n");
     uint8_t* raw = (uint8_t*)&result;
-    for (int i = 0; i < 64 && i < sizeof(result); i++) {
+    for (int i = 0; i < 544 && i < sizeof(result); i++) {
         printf("%02x ", raw[i]);
-        if ((i + 1) % 16 == 0) printf("\n");
+        if ((i + 1) % 32 == 0) printf("\n");
     }
     printf("\n");
 
