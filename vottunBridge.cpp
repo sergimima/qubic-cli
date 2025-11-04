@@ -1016,15 +1016,11 @@ void getContractInfo(const char* nodeIp, int nodePort)
     printf("Total Active Proposals: %llu\n", result.totalProposals);
 
     printf("\nMultisig Admins:\n");
-    for (int i = 0; i < 16; i++)
+    for (int i = 0; i < result.numberOfAdmins && i < 16; i++)
     {
         char multisigAdmin[128] = {0};
         getIdentityFromPublicKey(result.multisigAdmins[i], multisigAdmin, false);
-        // Only print non-empty admins
-        if (multisigAdmin[0] != '\0' && strcmp(multisigAdmin, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA") != 0)
-        {
-            printf("  Admin %d: %s\n", i + 1, multisigAdmin);
-        }
+        printf("  Admin %d: %s\n", i + 1, multisigAdmin);
     }
 }
 

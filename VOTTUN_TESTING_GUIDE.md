@@ -1,5 +1,7 @@
 # VottunBridge CLI Testing Guide
 
+g++ -o qubic-cli main.cpp connection.cpp keyUtils.cpp nodeUtils.cpp walletUtils.cpp vottunBridge.cpp assetUtils.cpp SCUtils.cpp fileUpload.cpp msvault.cpp qvault.cpp qx.cpp qearn.cpp proposal.cpp qutil.cpp quottery.cpp testUtils.cpp -lcurl -lpthread -std=c++17
+
 ## Network Configuration
 - **Node IP**: 194.247.186.29
 - **Node Port**: 31841
