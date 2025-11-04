@@ -272,8 +272,6 @@ void print_help()
     printf("\n[VOTTUNBRIDGE COMMANDS]\n");
     printf("\t-vottuncreateorder <QUBIC_DESTINATION> <AMOUNT> <ETHER_ADDRESS> <FROM_QUBIC_TO_ETHEREUM>\n");
     printf("\t\tCreate an order (FROM_QUBIC_TO_ETHEREUM: 1=Qubic→ETH, 0=ETH→Qubic)\n");
-    printf("\t-vottunsetadmin <ADDRESS>\n");
-    printf("\t\tSet the admin with <ADDRESS>\n");
     printf("\t-vottunaddmanager <ADDRESS>\n");
     printf("\t\tAdd the manager with <ADDRESS>\n");
     printf("\t-vottunremovemanager <ADDRESS>\n");
@@ -292,8 +290,6 @@ void print_help()
     printf("\t\tGet order for <ORDER_ID>\n");
     printf("\t-vottungettotalreceivedtoken <AMOUNT>\n");
     printf("\t\tGet the total received token.\n");
-    printf("\t-vottungetadminid <ID_INPUT>\n");
-    printf("\t\tGet the admin id from contract\n");
     printf("\t-vottungettotallockedtokens\n");
     printf("\t\tGet the toal locked token in contract\n");
     printf("\t-vottungetorderbydetails <ETHER_ADDRESS> <AMOUNT> <STATUS>\n");
@@ -1568,15 +1564,6 @@ void parseArgument(int argc, char** argv)
             CHECK_OVER_PARAMETERS
             return;
         }
-        if (strcmp(argv[i], "-vottunsetadmin") == 0)
-        {
-            CHECK_NUMBER_OF_PARAMETERS(1)
-            g_cmd = VOTTUNBRIDGE_SET_ADMIN;
-            g_vottun_Id = argv[i + 1];
-            i += 2;
-            CHECK_OVER_PARAMETERS
-            return;
-        }
         if (strcmp(argv[i], "-vottunaddmanager") == 0)
         {
             CHECK_NUMBER_OF_PARAMETERS(1)
@@ -1655,15 +1642,6 @@ void parseArgument(int argc, char** argv)
             CHECK_NUMBER_OF_PARAMETERS(1)
             g_cmd = VOTTUNBRIDGE_GET_TOTAL_RECEIVED_TOKEN;
             g_vottun_amount = charToNumber(argv[i + 1]);
-            i += 2;
-            CHECK_OVER_PARAMETERS
-            return;
-        }
-        if (strcmp(argv[i], "-vottungetadminid") == 0)
-        {
-            CHECK_NUMBER_OF_PARAMETERS(1)
-            g_cmd = VOTTUNBRIDGE_GET_ADMIN_ID;
-            g_vottun_idInput = (uint8_t)charToNumber(argv[i + 1]);
             i += 2;
             CHECK_OVER_PARAMETERS
             return;

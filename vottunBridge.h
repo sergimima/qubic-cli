@@ -47,21 +47,6 @@ struct vottunBridgeGetTotalReceivedTokens_output
     }
 };
 
-struct vottunBridgeGetAdminID_input
-{
-    uint8_t idInput;
-};
-
-struct vottunBridgeGetAdminID_output
-{
-    uint8_t adminId[32];
-
-    static constexpr unsigned char type()
-    {
-        return RespondContractFunction::type();
-    }
-};
-
 struct vottunBridgeGetTotalLockedTokens_input
 {
     // No input parameters
@@ -165,7 +150,6 @@ struct vottunBridgeGetProposal_output
 
 // Procedure declarations
 void createOrder(const char* nodeIp, int nodePort, const char* seed, uint32_t scheduledTickOffset, const char* qubicDestination, const char* ethAddress, uint64_t amount, bool fromQubicToEthereum);
-void setAdmin(const char* nodeIp, int nodePort, const char* seed, uint32_t scheduledTickOffset, const char* identity);
 void addManager(const char* nodeIp, int nodePort, const char* seed, uint32_t scheduledTickOffset, const char* identity);
 void removeManager(const char* nodeIp, int nodePort, const char* seed, uint32_t scheduledTickOffset, const char* identity);
 void completeOrder(const char* nodeIp, int nodePort, const char* seed, uint32_t scheduledTickOffset, uint64_t orderId);
@@ -238,7 +222,6 @@ struct vottunBridgeGetAvailableFees_output
 // Query function declarations
 void getOrder(const char* nodeIp, int nodePort, uint64_t orderId);
 void getTotalReceivedTokens(const char* nodeIp, int nodePort, uint64_t amount);
-void getAdminID(const char* nodeIp, int nodePort, uint8_t idInput);
 void getTotalLockedTokens(const char* nodeIp, int nodePort);
 void getOrderByDetails(const char* nodeIp, int nodePort, const char* ethAddress, uint64_t amount, uint8_t status);
 void getContractInfo(const char* nodeIp, int nodePort);

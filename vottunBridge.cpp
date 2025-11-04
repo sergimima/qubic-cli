@@ -28,16 +28,15 @@
 // VOTTUNBRIDGE PROCEDURES
 
 #define VOTTUNBRIDGE_TYPE_CREATE_ORDER 1
-#define VOTTUNBRIDGE_TYPE_SET_ADMIN 2
-#define VOTTUNBRIDGE_TYPE_ADD_MANAGER 3
-#define VOTTUNBRIDGE_TYPE_REMOVE_MANAGER 4
-#define VOTTUNBRIDGE_TYPE_COMPLETE_ORDER 5
-#define VOTTUNBRIDGE_TYPE_REFUND_ORDER 6
-#define VOTTUNBRIDGE_TYPE_TRANSFER_TO_CONTRACT 7
-#define VOTTUNBRIDGE_TYPE_WITHDRAW_FEES 8
-#define VOTTUNBRIDGE_TYPE_ADD_LIQUIDITY 9
-#define VOTTUNBRIDGE_TYPE_CREATE_PROPOSAL 10
-#define VOTTUNBRIDGE_TYPE_APPROVE_PROPOSAL 11
+#define VOTTUNBRIDGE_TYPE_ADD_MANAGER 2
+#define VOTTUNBRIDGE_TYPE_REMOVE_MANAGER 3
+#define VOTTUNBRIDGE_TYPE_COMPLETE_ORDER 4
+#define VOTTUNBRIDGE_TYPE_REFUND_ORDER 5
+#define VOTTUNBRIDGE_TYPE_TRANSFER_TO_CONTRACT 6
+#define VOTTUNBRIDGE_TYPE_WITHDRAW_FEES 7
+#define VOTTUNBRIDGE_TYPE_ADD_LIQUIDITY 8
+#define VOTTUNBRIDGE_TYPE_CREATE_PROPOSAL 9
+#define VOTTUNBRIDGE_TYPE_APPROVE_PROPOSAL 10
 
 constexpr uint64_t TRANSACTION_FEE = 1000;
 
@@ -53,16 +52,6 @@ struct createOrder_output
 {
     uint8_t status;
     uint64_t orderId;
-};
-
-struct setAdmin_input
-{
-    uint8_t address[32];
-};
-
-struct setAdmin_output
-{
-    uint8_t status;
 };
 
 struct addManager_input
@@ -232,70 +221,6 @@ void createOrder(const char* nodeIp, int nodePort, const char* seed, uint32_t sc
     } else {
         LOG("Failed to receive response from contract\n");
     }
-}
-
-void setAdmin(const char* nodeIp, int nodePort, const char* seed, uint32_t scheduledTickOffset, const char* identity)
-{
-    auto qc = make_qc(nodeIp, nodePort);
-
-    uint8_t publicKey[32] = {0};
-    getPublicKeyFromIdentity(identity, publicKey);
-
-    uint8_t privateKey[32] = {0};
-    uint8_t sourcePublicKey[32] = {0};  
-    uint8_t destPublicKey[32] = {0};
-    uint8_t subseed[32] = {0};
-    uint8_t digest[32] = {0};
-    uint8_t signature[64] = {0};
-    char publicIdentity[128] = {0};
-    char txHash[128] = {0};
-    getSubseedFromSeed((uint8_t*)seed, subseed);
-    getPrivateKeyFromSubSeed(subseed, privateKey);
-    getPublicKeyFromPrivateKey(privateKey, sourcePublicKey);
-    const bool isLowerCase = false;
-    getIdentityFromPublicKey(sourcePublicKey, publicIdentity, isLowerCase);
-    ((uint64_t*)destPublicKey)[0] = VOTTUNBRIDGE_CONTRACT_INDEX;
-    ((uint64_t*)destPublicKey)[1] = 0;
-    ((uint64_t*)destPublicKey)[2] = 0;
-    ((uint64_t*)destPublicKey)[3] = 0;
-
-    #pragma pack(push, 1)
-    struct {
-        RequestResponseHeader header;
-        Transaction transaction;
-        setAdmin_input input;
-        unsigned char signature[64];
-    } packet;
-    #pragma pack(pop)
-
-    memcpy(packet.input.address, publicKey, 32);
-
-    packet.transaction.amount = 0;
-    memcpy(packet.transaction.sourcePublicKey, sourcePublicKey, 32);
-    memcpy(packet.transaction.destinationPublicKey, destPublicKey, 32);
-    uint32_t currentTick = getTickNumberFromNode(qc);
-    packet.transaction.tick = currentTick + scheduledTickOffset;
-    packet.transaction.inputType = VOTTUNBRIDGE_TYPE_SET_ADMIN;
-    packet.transaction.inputSize = sizeof(setAdmin_input);
-    KangarooTwelve((unsigned char*)&packet.transaction,
-                   sizeof(packet.transaction) + sizeof(setAdmin_input),
-                   digest,
-                   32);
-    sign(subseed, sourcePublicKey, digest, signature);
-    memcpy(packet.signature, signature, 64);
-    packet.header.setSize(sizeof(packet));
-    packet.header.zeroDejavu();
-    packet.header.setType(BROADCAST_TRANSACTION);
-    qc->sendData((uint8_t *) &packet, packet.header.size());
-    KangarooTwelve((unsigned char*)&packet.transaction,
-                   sizeof(packet.transaction) + sizeof(setAdmin_input) + SIGNATURE_SIZE,
-                   digest,
-                   32); // recompute digest for txhash
-    getTxHashFromDigest(digest, txHash);
-    LOG("setAdmin tx has been sent!\n");
-    printReceipt(packet.transaction, txHash, nullptr);
-    LOG("run ./qubic-cli [...] -checktxontick %u %s\n", currentTick + scheduledTickOffset, txHash);
-    LOG("to check your tx confirmation status\n");
 }
 
 void addManager(const char* nodeIp, int nodePort, const char* seed, uint32_t scheduledTickOffset, const char* identity)
@@ -768,7 +693,7 @@ void getOrder(const char* nodeIp, int nodePort, uint64_t orderId)
     getIdentityFromPublicKey(result.order.destinationAccount, destinationAccount, false);
 
     printf("The status of Order%llu is %u\n\n", orderId ,result.status);
-    printf("%s\nOrderId: %llu\nOriginAccount: %s\nDestinationAccount: %s\nAmount: %lld\nMetadata: %s\nSource Chain: %u", result.message,result.order.orderId, originAccount, destinationAccount, result.order.amount, result.order.memo, result.order.sourceChain);
+    printf("%s\nOrderId: %llu\nOriginAccount: %s\nDestinationAccount: %s\nAmount: %llu\nMetadata: %s\nSource Chain: %u", result.message,result.order.orderId, originAccount, destinationAccount, (unsigned long long)result.order.amount, result.order.memo, result.order.sourceChain);
 }
 
 void getTotalReceivedTokens(const char* nodeIp, int nodePort, uint64_t amount)
@@ -803,45 +728,7 @@ void getTotalReceivedTokens(const char* nodeIp, int nodePort, uint64_t amount)
         return;
     }
 
-    printf("Total Received Token: %lld\n", result.totalTokens);
-}
-
-void getAdminID(const char* nodeIp, int nodePort, uint8_t idInput)
-{
-    auto qc = make_qc(nodeIp, nodePort);
-    
-    #pragma pack(push, 1)
-    struct {
-        RequestResponseHeader header;
-        RequestContractFunction rcf;
-        vottunBridgeGetAdminID_input input;
-    } packet;
-    #pragma pack(pop)
-    packet.header.setSize(sizeof(packet));
-    packet.header.randomizeDejavu();
-    packet.header.setType(RequestContractFunction::type());
-    packet.rcf.inputSize = sizeof(vottunBridgeGetAdminID_input);
-    packet.rcf.inputType = VOTTUNBRIDGE_TYPE_GET_ADMIN_ID;
-    packet.rcf.contractIndex = VOTTUNBRIDGE_CONTRACT_INDEX;
-    packet.input.idInput = idInput;
-    
-    qc->sendData((uint8_t *) &packet, packet.header.size());
-
-    vottunBridgeGetAdminID_output result;
-    try
-    {
-        result = qc->receivePacketWithHeaderAs<vottunBridgeGetAdminID_output>();
-    }
-    catch (std::logic_error)
-    {
-        LOG("Failed to receive data\n");
-        return;
-    }
-
-    char adminId[128] = {0};
-    getIdentityFromPublicKey(result.adminId, adminId, false);
-
-    printf("Admin Id: %s\n", adminId);
+    printf("Total Received Token: %llu\n", (unsigned long long)result.totalTokens);
 }
 
 void getTotalLockedTokens(const char* nodeIp, int nodePort)
@@ -874,7 +761,7 @@ void getTotalLockedTokens(const char* nodeIp, int nodePort)
         return;
     }
 
-    printf("Total Locked Token: %lld\n", result.totalLockedTokens);
+    printf("Total Locked Token: %llu\n", (unsigned long long)result.totalLockedTokens);
 }
 
 void getOrderByDetails(const char* nodeIp, int nodePort, const char* ethAddress, uint64_t amount, uint8_t status)

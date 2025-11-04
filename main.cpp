@@ -613,13 +613,6 @@ int run(int argc, char* argv[])
             createOrder(g_nodeIp,g_nodePort,g_seed,g_offsetScheduledTick, g_vottun_qubicDestination, g_vottun_ethAddress, g_vottun_amount, g_vottun_flag);
             break;
         }
-        case VOTTUNBRIDGE_SET_ADMIN:
-        {
-            sanityCheckNode(g_nodeIp, g_nodePort);
-            sanityCheckSeed(g_seed);
-            setAdmin(g_nodeIp,g_nodePort,g_seed,g_offsetScheduledTick, g_vottun_Id);
-            break;
-        }
         case VOTTUNBRIDGE_ADD_MANAGER:
         {
             sanityCheckNode(g_nodeIp, g_nodePort);
@@ -679,12 +672,6 @@ int run(int argc, char* argv[])
         {
             sanityCheckNode(g_nodeIp, g_nodePort);
             getTotalReceivedTokens(g_nodeIp,g_nodePort,g_vottun_amount);
-            break;
-        }
-        case VOTTUNBRIDGE_GET_ADMIN_ID:
-        {
-            sanityCheckNode(g_nodeIp, g_nodePort);
-            getAdminID(g_nodeIp,g_nodePort,g_vottun_idInput);
             break;
         }
         case VOTTUNBRIDGE_GET_TOTAL_LOCKED_TOKEN:
