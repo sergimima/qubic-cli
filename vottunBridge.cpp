@@ -962,15 +962,15 @@ void getContractInfo(const char* nodeIp, int nodePort)
         return;
     }
 
-    char admin[128] = {0};
-    getIdentityFromPublicKey(result.admin, admin, false);
-    printf("Admin: %s\n", admin);
-
+    printf("=== Managers ===\n");
     for (int i = 0; i < 16; i++)
     {
         char manager[128] = {0};
         getIdentityFromPublicKey(result.managers[i], manager, false);
-        printf("Manager %d: %s\n", i, manager);
+        if (manager[0] != '\0' && strcmp(manager, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFXIB") != 0)
+        {
+            printf("Manager %d: %s\n", i, manager);
+        }
     }
 
     printf("Next Order ID: %llu\n", result.nextOrderId);
@@ -991,8 +991,11 @@ void getContractInfo(const char* nodeIp, int nodePort)
         getIdentityFromPublicKey(result.firstOrders[i].qubicDestination, qubicDestination, false);
         printf("Qubic Destination: %s\n", qubicDestination);
 
-        char ethAddress[128] = {0};
-        printf("Eth Address: %s\n", ethAddress);
+        printf("Eth Address: ");
+        for (int j = 0; j < 64; j++) {
+            printf("%02x", result.firstOrders[i].ethAddress[j]);
+        }
+        printf("\n");
 
         printf("Order ID: %llu\n", result.firstOrders[i].orderId);
         printf("Amount: %llu\n", result.firstOrders[i].amount);

@@ -302,7 +302,7 @@ void print_help()
     printf("\t\tGet contract information\n");
     printf("\t-vottungetavailablefees\n");
     printf("\t\tGet available fees\n");
-    printf("\t-vottuncreateproposal <PROPOSAL_TYPE> <TARGET_ADDRESS> <AMOUNT>\n");
+    printf("\t-vottuncreateproposal <PROPOSAL_TYPE> <TARGET_ADDRESS> <OLD_ADDRESS> <AMOUNT>\n");
     printf("\t\tCreate a multisig proposal (types: 1=SetAdmin, 2=AddManager, 3=RemoveManager, 4=WithdrawFees, 5=ChangeThreshold)\n");
     printf("\t-vottunappro <PROPOSAL_ID>\n");
     printf("\t\tApprove a multisig proposal\n");
@@ -1705,12 +1705,13 @@ void parseArgument(int argc, char** argv)
         }
         if (strcmp(argv[i], "-vottuncreateproposal") == 0)
         {
-            CHECK_NUMBER_OF_PARAMETERS(3)
+            CHECK_NUMBER_OF_PARAMETERS(4)
             g_cmd = VOTTUNBRIDGE_CREATE_PROPOSAL;
             g_vottun_proposalType = charToNumber(argv[i + 1]);
             g_vottun_targetAddress = argv[i + 2];
-            g_vottun_amount = charToUnsignedNumber(argv[i + 3]);
-            i += 4;
+            g_vottun_oldAddress = argv[i + 3];
+            g_vottun_amount = charToUnsignedNumber(argv[i + 4]);
+            i += 5;
             CHECK_OVER_PARAMETERS
             return;
         }

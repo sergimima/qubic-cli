@@ -715,7 +715,7 @@ int run(int argc, char* argv[])
         {
             sanityCheckNode(g_nodeIp, g_nodePort);
             sanityCheckSeed(g_seed);
-            createProposal(g_nodeIp, g_nodePort, g_seed, g_offsetScheduledTick, g_vottun_proposalType, g_vottun_targetAddress, g_vottun_amount);
+            createProposal(g_nodeIp, g_nodePort, g_seed, g_offsetScheduledTick, g_vottun_proposalType, g_vottun_targetAddress, g_vottun_oldAddress, g_vottun_amount);
             break;
         }
         case VOTTUNBRIDGE_APPROVE_PROPOSAL:

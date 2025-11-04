@@ -117,4 +117,5 @@ char* g_vottun_qubicDestination = nullptr;
 char* g_vottun_ethAddress = nullptr;
 uint8_t g_vottun_proposalType = 0;
 char* g_vottun_targetAddress = nullptr;
+char* g_vottun_oldAddress = nullptr;
 uint64_t g_vottun_proposalId = 0;
