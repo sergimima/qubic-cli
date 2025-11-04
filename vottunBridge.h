@@ -209,6 +209,7 @@ struct vottunBridgeGetContractInfo_output
     uint8_t multisigAdmins[16][32];
     uint8_t numberOfAdmins;
     uint8_t requiredApprovals;
+    uint8_t _padding2[6];  // Padding to align totalProposals to 8 bytes
     uint64_t totalProposals;
 
     static constexpr unsigned char type()
