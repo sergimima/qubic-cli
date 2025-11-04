@@ -191,6 +191,7 @@ struct OrderInfo
     uint8_t fromQubicToEthereum;
     uint8_t tokensReceived;
     uint8_t tokensLocked;
+    uint8_t _padding[3];
 };
 
 struct vottunBridgeGetContractInfo_output

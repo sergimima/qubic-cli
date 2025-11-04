@@ -952,6 +952,10 @@ void getContractInfo(const char* nodeIp, int nodePort)
     qc->sendData((uint8_t *) &packet, packet.header.size());
 
     vottunBridgeGetContractInfo_output result;
+
+    printf("DEBUG: sizeof(OrderInfo) = %zu\n", sizeof(OrderInfo));
+    printf("DEBUG: sizeof(vottunBridgeGetContractInfo_output) = %zu\n", sizeof(vottunBridgeGetContractInfo_output));
+
     try
     {
         result = qc->receivePacketWithHeaderAs<vottunBridgeGetContractInfo_output>();
