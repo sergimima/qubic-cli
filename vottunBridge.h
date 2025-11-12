@@ -13,6 +13,7 @@ struct OrderResponse
     uint64_t amount;         // Amount as uint64
     uint8_t memo[64]; // Notes or metadata
     uint32_t sourceChain;    // Source chain identifier
+    uint8_t status;          // Order status (0=pending, 1=completed, 2=refunded)
 };
 
     struct vottunBridgeGetOrder_input

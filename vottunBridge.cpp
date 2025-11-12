@@ -692,7 +692,7 @@ void getOrder(const char* nodeIp, int nodePort, uint64_t orderId)
     getIdentityFromPublicKey(result.order.originAccount, originAccount, false);
     getIdentityFromPublicKey(result.order.destinationAccount, destinationAccount, false);
 
-    printf("The status of Order%llu is %u\n\n", orderId ,result.status);
+    printf("The status of Order%llu is %u\n\n", orderId, result.order.status);
     printf("%s\nOrderId: %llu\nOriginAccount: %s\nDestinationAccount: %s\nAmount: %llu\nMetadata: %s\nSource Chain: %u", result.message,result.order.orderId, originAccount, destinationAccount, (unsigned long long)result.order.amount, result.order.memo, result.order.sourceChain);
 }
 
@@ -837,9 +837,6 @@ void getContractInfo(const char* nodeIp, int nodePort)
     qc->sendData((uint8_t *) &packet, packet.header.size());
 
     vottunBridgeGetContractInfo_output result;
-
-    printf("DEBUG: sizeof(OrderInfo) = %zu\n", sizeof(OrderInfo));
-    printf("DEBUG: sizeof(vottunBridgeGetContractInfo_output) = %zu\n", sizeof(vottunBridgeGetContractInfo_output));
 
     try
     {
